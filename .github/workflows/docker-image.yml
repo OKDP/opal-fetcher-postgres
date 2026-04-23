@@ -1,0 +1,29 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "branch-0.9.4" ]
+  pull_request:
+    branches: [ "branch-0.9.4" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Log in to Quay.io
+      run: docker login quay.io -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}"
+        
+    - name: Build the Docker image
+      run: |
+        docker build -t quay.io/okdp/opal-client-standalone:${{ github.sha }} .
+        docker tag quay.io/okdp/opal-client-standalone:${{ github.sha }} quay.io/okdp/opal-client-standalone:0.9.4-1.0-postgres
+    
+    - name: Publish image to quay.io
+      run: |
+        docker push quay.io/okdp/opal-client-standalone:${{ github.sha }}
+        docker push quay.io/okdp/opal-client-standalone:0.9.4-1.0-postgres
